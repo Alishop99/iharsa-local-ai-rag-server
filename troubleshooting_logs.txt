@@ -1,0 +1,51 @@
+========================================================================
+IHARSA LOCAL AI SERVER - TROUBLESHOOTING & DEBUGGING LOGS
+Date Recorded : 2026-11-17
+Environment   : Ubuntu 26.04 | AMD Radeon RX 580 (Vulkan) | Ollama + Flask + PM2
+========================================================================
+
+[1] PHASE 1: VULKAN GPU DEVICE LOST & CHROMADB ERROR (api-iharsa-out.log)
+------------------------------------------------------------------------
+4|api_ihar |  * Serving Flask app 'api_ai'
+4|api_ihar |  * Debug mode: off
+4|api_ihar |  Peringatan: Gagal mencari memori ChromaDB - decode() failed: vk::Queue::submit: ErrorDeviceLost (status code: 500)
+4|api_ihar |  Error job efe91722ceed4c288f0a4acd41926c6d: Server disconnected without sending a response.
+4|api_ihar |  Peringatan: Gagal mencari memori ChromaDB - decode() failed: vk::Queue::submit: ErrorDeviceLost (status code: 500)
+4|api_ihar |  Error job 2971d3c42f9a4e68af9bdc6fd60459e0: model runner has unexpectedly stopped, this may be due to resource limitations or an internal error, check ollama server logs for details (status code: 500)
+4|api_ihar |  Peringatan: Gagal mencari memori ChromaDB - decode() failed: vk::Queue::submit: ErrorDeviceLost (status code: 500)
+
+[2] PHASE 2: MISSING OPENAI-COMPATIBLE ROUTES - HTTP 404 (api-iharsa-error.log)
+------------------------------------------------------------------------
+4|api_ihar | 192.168.1.18 - - [17/Nov/2026 14:18:15] "GET /v1/models HTTP/1.1" 404 -
+4|api_ihar | 192.168.1.18 - - [17/Nov/2026 14:18:58] "POST /v1/chat/completions HTTP/1.1" 404 -
+4|api_ihar | 192.168.1.18 - - [17/Nov/2026 14:20:02] "POST /v1/chat/completions HTTP/1.1" 404 -
+4|api_ihar | 192.168.1.18 - - [17/Nov/2026 14:22:39] "POST /v1/chat/completions HTTP/1.1" 404 -
+4|api_ihar | 192.168.1.18 - - [17/Nov/2026 14:30:05] "GET /slots HTTP/1.1" 404 -
+4|api_ihar | 192.168.1.18 - - [17/Nov/2026 14:30:05] "GET /props HTTP/1.1" 404 -
+4|api_ihar | 192.168.1.18 - - [17/Nov/2026 14:31:04] "GET /v1 HTTP/1.1" 404 -
+4|api_ihar | 192.168.1.18 - - [17/Nov/2026 14:31:13] "GET /v1/models HTTP/1.1" 404 -
+
+[3] PHASE 3: INCOMPLETE FLASK VIEW RETURN - HTTP 500 (api-iharsa-error.log)
+------------------------------------------------------------------------
+4|api_ihar | [2026-11-17 14:52:08,803] ERROR in app: Exception on /v1/chat/completions [POST]
+4|api_ihar | Traceback (most recent call last):
+4|api_ihar |   File "/home/dataai/ai_vektor/env/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+4|api_ihar |     response = self.full_dispatch_request()
+4|api_ihar |   File "/home/dataai/ai_vektor/env/lib/python3.14/site-packages/flask/app.py", line 920, in full_dispatch_request
+4|api_ihar |     return self.finalize_request(rv)
+4|api_ihar |   File "/home/dataai/ai_vektor/env/lib/python3.14/site-packages/flask/app.py", line 939, in finalize_request
+4|api_ihar |     response = self.make_response(rv)
+4|api_ihar |   File "/home/dataai/ai_vektor/env/lib/python3.14/site-packages/flask/app.py", line 1212, in make_response
+4|api_ihar |     raise TypeError(
+4|api_ihar | TypeError: The view function for 'chat_completions' did not return a valid response. The function either returned None or ended without a return statement.
+4|api_ihar | 192.168.1.18 - - [17/Nov/2026 14:52:08] "POST /v1/chat/completions HTTP/1.1" 500 -
+
+[4] PHASE 4: FINAL STABILIZED PM2 STATE (AFTER FIX & pm2 save)
+------------------------------------------------------------------------
++----+----------------+----------+------+-----------+----------+----------+
+| id | name           | mode     | rst  | status    | cpu      | memory   |
++----+----------------+----------+------+-----------+----------+----------+
+| 4  | api_iharsa     | fork     | 5    | online    | 0%       | 128.5mb  |
+| 0  | odysseus_ui    | fork     | 1    | online    | 0%       | 242.6mb  |
+| 2  | openclaw       | fork     | 0    | stopped   | 0%       | 0b       |
++----+----------------+----------+------+-----------+----------+----------+

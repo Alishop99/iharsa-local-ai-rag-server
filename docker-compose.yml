@@ -1,0 +1,8 @@
+# Referensi konfigurasi port Docker untuk Odysseus UI
+# Perubahan utama: menghapus binding lokal '127.0.0.1:' agar dapat diakses melalui jaringan LAN
+services:
+  odysseus:
+    # Sesuaikan image/build sesuai repositori Odysseus lokal
+    ports:
+      - "7011:7000"
+    restart: unless-stopped
